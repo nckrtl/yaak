@@ -1,0 +1,341 @@
+// Pure mapping from the toolbar payload to what the Toolbar tab shows. Ported from the Orca
+// browser pane (laravel-toolbar/model.ts).
+import type { SourceLocation, ToolbarData, ToolbarHistoryRow, ToolbarQuery } from "./types";
+
+export type RequestKind = "page" | "inertia" | "xhr";
+
+export type RequestSummary = {
+  readonly id: string;
+  readonly status: number | null;
+  readonly method: string;
+  readonly uri: string;
+  readonly routeName: string | null;
+  /** The route's name, or its URI pattern (such as `/`) when it has none. */
+  readonly route: string;
+  readonly action: string | null;
+  readonly component: string | null;
+  readonly kind: RequestKind;
+  readonly duration: string | null;
+  readonly size: string | null;
+};
+
+export type Stage = {
+  readonly label: string;
+  readonly color: string;
+  readonly durationMs: number;
+  readonly startMs: number;
+  readonly memoryBytes: number;
+};
+
+export type Query = {
+  readonly sql: string;
+  readonly durationMs: number;
+  readonly isDuplicate: boolean;
+  readonly isSlow: boolean;
+  /** Start and length as shares (0–1) of cumulative recorded query time. */
+  readonly offset: number;
+  readonly share: number;
+  readonly file: string | null;
+  readonly line: number | null;
+};
+
+const FALLBACK_STAGE_COLOR = "#8D76FF";
+
+/** Stage colors come from the payload; only plain hex colors reach a style attribute. */
+export function safeColor(value: unknown): string {
+  return typeof value === "string" && /^#[0-9a-f]{3,8}$/i.test(value)
+    ? value
+    : FALLBACK_STAGE_COLOR;
+}
+
+export function requestKind(row: Pick<ToolbarHistoryRow, "is_xhr" | "response_type">): RequestKind {
+  if (!row.is_xhr) {
+    return "page";
+  }
+  return row.response_type === "Inertia" ? "inertia" : "xhr";
+}
+
+/** The route's URI pattern with a leading slash; Laravel leaves it off except for `/`. */
+export function routeUri(data?: ToolbarData | null): string | null {
+  const uri = data?.request?.route_uri ?? data?.request?.uri;
+  if (!uri) {
+    return null;
+  }
+  return uri.startsWith("/") ? uri : `/${uri}`;
+}
+
+/** The package writes `-` for routes without a name. */
+function named(value: string | null | undefined): string | null {
+  return value && value !== "-" ? value : null;
+}
+
+/** A request as a history row shows it, completed by its full payload when loaded. */
+export function summarize(row: ToolbarHistoryRow, data?: ToolbarData | null): RequestSummary {
+  return {
+    id: row.id,
+    status: data?.response?.status_code ?? row.status_code ?? null,
+    method: data?.request?.method ?? row.method,
+    uri: data?.request?.uri ?? row.uri,
+    routeName: named(data?.request?.route_name ?? row.name),
+    route: named(data?.request?.route_name ?? row.name) ?? routeUri(data) ?? row.uri,
+    action: data?.request?.controller_action ?? row.action ?? null,
+    component: data?.request?.view_name ?? null,
+    kind: requestKind(row),
+    duration: data?.profiler?.total_wall_time?.formattedValue ?? row.duration ?? null,
+    size: responseSize(data) ?? row.size ?? null,
+  };
+}
+
+/** Newer package versions send the response size as a measurement, older ones as text. */
+function responseSize(data?: ToolbarData | null): string | null {
+  const size = data?.response?.size;
+  if (size == null) {
+    return null;
+  }
+  return typeof size === "string" ? size : (size.formattedValue ?? null);
+}
+
+/** The history row for a full payload, when the page sent none (an initial page load). */
+export function rowFromData(data: ToolbarData): ToolbarHistoryRow | null {
+  if (data.history_row) {
+    return data.history_row;
+  }
+  if (!data.request_id) {
+    return null;
+  }
+  return {
+    id: data.request_id,
+    is_xhr: false,
+    method: data.request?.method ?? "GET",
+    uri: data.request?.uri ?? "/",
+    name: data.request?.route_name ?? null,
+    action: data.request?.controller_action ?? null,
+    status_code: data.response?.status_code ?? null,
+    size: responseSize(data),
+    duration: data.profiler?.total_wall_time?.formattedValue ?? null,
+    response_type: data.request?.is_inertia ? "Inertia" : null,
+  };
+}
+
+/** An array from the payload, or an empty one when the field is missing or malformed. */
+export function list<T>(value: readonly T[] | null | undefined): readonly T[] {
+  return Array.isArray(value) ? value : [];
+}
+
+function num(value: unknown): number {
+  return typeof value === "number" && Number.isFinite(value) ? value : 0;
+}
+
+/** Request stages laid end to end, so each starts where the previous one ended. */
+export function stages(data: ToolbarData): Stage[] {
+  let cursor = 0;
+  return list(data.profiler?.stages).map((stage) => {
+    const durationMs = num(stage.wall_time?.measurement?.value);
+    const result: Stage = {
+      label: String(stage.label ?? ""),
+      color: safeColor(stage.color),
+      durationMs,
+      startMs: cursor,
+      memoryBytes: num(stage.memory_real_delta?.measurement?.value),
+    };
+    cursor += durationMs;
+    return result;
+  });
+}
+
+export function wallTimeMs(data: ToolbarData): number {
+  return (
+    (typeof data.profiler?.total_wall_time?.value === "number"
+      ? data.profiler.total_wall_time.value
+      : null) ?? stages(data).reduce((total, stage) => total + stage.durationMs, 0)
+  );
+}
+
+function toQuery(query: ToolbarQuery): Query {
+  return {
+    sql: String(query.sql ?? ""),
+    durationMs: num(query.duration),
+    isDuplicate: query.is_duplicate ?? false,
+    isSlow: query.is_slow ?? false,
+    offset: num(query.offset),
+    share: num(query.percentage),
+    file: query.file ?? null,
+    line: query.line ?? null,
+  };
+}
+
+export function queries(data: ToolbarData): Query[] {
+  return list(data.queries?.queries).map(toQuery);
+}
+
+export function hasQueryIssues(data: ToolbarData): boolean {
+  return list(data.queries?.queries).some((query) => query.is_duplicate || query.is_slow);
+}
+
+export function modelCount(data: ToolbarData): number {
+  return list(data.models).reduce((total, model) => total + num(model.retrieved), 0);
+}
+
+export function formatMs(value: number): string {
+  return value >= 100 ? `${Math.round(value)}ms` : `${value.toFixed(value >= 10 ? 1 : 2)}ms`;
+}
+
+export function formatBytes(value: number): string {
+  const size = Math.abs(value);
+  const sign = value < 0 ? "-" : "";
+  if (size >= 1024 ** 3) {
+    return `${sign}${(size / 1024 ** 3).toFixed(2)} GB`;
+  }
+  if (size >= 1024 * 1024) {
+    return `${sign}${(size / 1024 / 1024).toFixed(2)} MB`;
+  }
+  if (size >= 1024) {
+    return `${sign}${(size / 1024).toFixed(2)} KB`;
+  }
+  return `${sign}${size} B`;
+}
+
+/** The file name and line of a source path, for a compact link label. */
+export function shortLocation(file: string | null, line: number | null): string | null {
+  if (!file) {
+    return null;
+  }
+  const name = file.split("/").pop() ?? file;
+  return line ? `${name}:${line}` : name;
+}
+
+/** Header maps arrive as arrays per name; show them joined. */
+export function headerRows(
+  headers: Readonly<Record<string, readonly string[]>> | undefined,
+): [string, string][] {
+  return Object.entries(headers ?? {}).map(([name, values]) => [
+    name,
+    Array.isArray(values) ? values.map(String).join(", ") : String(values),
+  ]);
+}
+
+export type PropBadge = "Shared" | "Always" | "Deferred" | "Optional" | "Merge" | "Scroll" | "Once";
+
+const TYPE_BADGE: Record<string, PropBadge> = {
+  always: "Always",
+  defer: "Deferred",
+  optional: "Optional",
+  merge: "Merge",
+  scroll: "Scroll",
+  once: "Once",
+};
+
+export type PropRow = {
+  readonly name: string;
+  readonly value: unknown;
+  /** False for a deferred prop this response left out. */
+  readonly loaded: boolean;
+  readonly badges: readonly PropBadge[];
+  readonly source: SourceLocation | null;
+};
+
+/** The page's top-level props with what Inertia knows about them; deferred props come last. */
+export function propRows(data: ToolbarData | null): PropRow[] {
+  const values = data?.request?.view_data ?? {};
+  const meta = data?.inertia?.props ?? {};
+  const row = (name: string, loaded: boolean): PropRow => {
+    const info = meta[name];
+    const badges: PropBadge[] = [];
+    if (info?.shared) {
+      badges.push("Shared");
+    }
+    const typeBadge = info?.type ? TYPE_BADGE[info.type] : undefined;
+    if (typeBadge) {
+      badges.push(typeBadge);
+    }
+    return { name, value: values[name], loaded, badges, source: info?.source ?? null };
+  };
+  return [
+    ...Object.keys(values).map((name) => row(name, true)),
+    ...Object.keys(meta)
+      .filter((name) => !(name in values) && meta[name]?.loaded === false)
+      .map((name) => row(name, false)),
+  ];
+}
+
+/** An ini switch as On or Off; empty, "0" and "off" are off. */
+export function iniSwitch(value: string | null | undefined): string {
+  if (value == null) {
+    return "–";
+  }
+  return ["", "0", "off", "false", "no"].includes(value.toLowerCase()) ? "Off" : "On";
+}
+
+const ERROR_LEVELS: readonly (readonly [string, number])[] = [
+  ["E_DEPRECATED", 8192],
+  ["E_USER_DEPRECATED", 16384],
+  ["E_STRICT", 2048],
+  ["E_NOTICE", 8],
+  ["E_USER_NOTICE", 1024],
+  ["E_WARNING", 2],
+  ["E_USER_WARNING", 512],
+];
+
+/**
+ * `error_reporting` as constants, such as `E_ALL & ~E_DEPRECATED` for 22527 on PHP 8.4+.
+ * PHP 8.4 dropped E_STRICT, so E_ALL is 30719 there and 32767 before.
+ */
+export function errorReportingLabel(
+  value: string | null | undefined,
+  phpVersion: string | null | undefined,
+): string {
+  if (value == null || value === "") {
+    return "–";
+  }
+  const level = Number(value);
+  if (!Number.isInteger(level)) {
+    return value;
+  }
+  if (level === 0) {
+    return "None";
+  }
+  if (level === -1) {
+    return "E_ALL";
+  }
+  const [major = 0, minor = 0] = (phpVersion ?? "").split(".").map(Number);
+  const modern = major > 8 || (major === 8 && minor >= 4);
+  const all = modern ? 30719 : 32767;
+  const levels = ERROR_LEVELS.filter(([name]) => !(modern && name === "E_STRICT"));
+  if ((level & all) !== level) {
+    return String(level);
+  }
+  const missing = levels.filter(([, bit]) => (level & bit) === 0);
+  if (missing.reduce((sum, [, bit]) => sum + bit, 0) !== all - level) {
+    return String(level);
+  }
+  return ["E_ALL", ...missing.map(([name]) => `~${name}`)].join(" & ");
+}
+
+/** A PHP limit, where -1 (memory) or 0 (time) means no limit. */
+export function phpLimit(value: string | number | null | undefined, unit = ""): string {
+  if (value == null || value === "") {
+    return "–";
+  }
+  const text = String(value);
+  if (text === "-1" || (unit === "s" && text === "0")) {
+    return "Unlimited";
+  }
+  return `${text}${unit}`;
+}
+
+/** A duration in seconds as `3d 4h`, `16h 4m` or `5m`. */
+export function formatUptime(seconds: number | null | undefined): string {
+  if (seconds == null) {
+    return "–";
+  }
+  const days = Math.floor(seconds / 86400);
+  const hours = Math.floor((seconds % 86400) / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  if (days > 0) {
+    return `${days}d ${hours}h`;
+  }
+  if (hours > 0) {
+    return `${hours}h ${minutes}m`;
+  }
+  return `${minutes}m`;
+}

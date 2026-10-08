@@ -29,6 +29,7 @@ import { Tooltip } from "./core/Tooltip";
 import { EmptyStateText } from "./EmptyStateText";
 import { ErrorBoundary } from "./ErrorBoundary";
 import { HttpResponseTimeline } from "./HttpResponseTimeline";
+import { hasToolbarHeader, LaravelToolbar } from "./laravelToolbar/LaravelToolbar";
 import { RecentHttpResponsesDropdown } from "./RecentHttpResponsesDropdown";
 import { RequestBodyViewer } from "./RequestBodyViewer";
 import { ResponseCookies } from "./ResponseCookies";
@@ -57,6 +58,7 @@ const TAB_REQUEST = "request";
 const TAB_HEADERS = "headers";
 const TAB_COOKIES = "cookies";
 const TAB_TIMELINE = "timeline";
+const TAB_TOOLBAR = "toolbar";
 
 export type TimelineViewMode = "timeline" | "text";
 
@@ -81,6 +83,10 @@ export function HttpResponsePane({ style, className, activeRequestId }: Props) {
     activeResponse?.state === "closed" && redirectDropWarning != null;
 
   const cookieCounts = useMemo(() => getCookieCounts(responseEvents.data), [responseEvents.data]);
+  const hasToolbar = useMemo(
+    () => hasToolbarHeader(activeResponse?.headers),
+    [activeResponse?.headers],
+  );
   const saveResponse = useSaveResponse(activeResponse ?? null);
   const copyResponse = useCopyHttpResponse(activeResponse ?? null);
 
@@ -153,6 +159,7 @@ export function HttpResponsePane({ style, className, activeRequestId }: Props) {
           ],
         },
       },
+      { value: TAB_TOOLBAR, label: "Toolbar", hidden: !hasToolbar },
     ],
     [
       activeResponse?.headers,
@@ -172,6 +179,7 @@ export function HttpResponsePane({ style, className, activeRequestId }: Props) {
       viewMode,
       timelineViewMode,
       setTimelineViewMode,
+      hasToolbar,
     ],
   );
 
@@ -348,6 +356,9 @@ export function HttpResponsePane({ style, className, activeRequestId }: Props) {
               </TabContent>
               <TabContent value={TAB_TIMELINE}>
                 <HttpResponseTimeline response={activeResponse} viewMode={timelineViewMode} />
+              </TabContent>
+              <TabContent value={TAB_TOOLBAR}>
+                <LaravelToolbar response={activeResponse} />
               </TabContent>
             </Tabs>
           </div>

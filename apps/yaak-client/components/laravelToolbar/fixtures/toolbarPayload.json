@@ -1,0 +1,448 @@
+{
+  "request_id": "1f95c3bb910b5a60",
+  "data_bridge": {
+    "version": "0.1.0"
+  },
+  "profiler": {
+    "total_wall_time": {
+      "value": 58.645,
+      "unit": "ms",
+      "formattedValue": "58.6ms"
+    },
+    "total_real_memory": {
+      "value": 4194304,
+      "unit": "B",
+      "formattedValue": "4.00 MB"
+    },
+    "total_allocated_memory": {
+      "value": 2544592,
+      "unit": "B",
+      "formattedValue": "2.43 MB"
+    },
+    "stages": [
+      {
+        "label": "Bootstrapping",
+        "color": "#FC3D46",
+        "wall_time": {
+          "percentage": 13.849374936477284,
+          "measurement": {
+            "value": 8.122,
+            "unit": "ms",
+            "formattedValue": "8.12ms"
+          }
+        },
+        "memory_real_delta": {
+          "measurement": {
+            "value": 248664,
+            "unit": "B",
+            "formattedValue": "242.84 KB"
+          }
+        }
+      },
+      {
+        "label": "Booting services providers",
+        "color": "#FF9C4D",
+        "wall_time": {
+          "percentage": 31.861368025205817,
+          "measurement": {
+            "value": 18.685,
+            "unit": "ms",
+            "formattedValue": "18.7ms"
+          }
+        },
+        "memory_real_delta": {
+          "measurement": {
+            "value": 1191552,
+            "unit": "B",
+            "formattedValue": "1.14 MB"
+          }
+        }
+      },
+      {
+        "label": "Middleware in",
+        "color": "#FFD53D",
+        "wall_time": {
+          "percentage": 31.417827014940542,
+          "measurement": {
+            "value": 18.425,
+            "unit": "ms",
+            "formattedValue": "18.4ms"
+          }
+        },
+        "memory_real_delta": {
+          "measurement": {
+            "value": 466528,
+            "unit": "B",
+            "formattedValue": "455.59 KB"
+          }
+        }
+      },
+      {
+        "label": "Controller",
+        "color": "#64BAFF",
+        "wall_time": {
+          "percentage": 10.838093302164854,
+          "measurement": {
+            "value": 6.356,
+            "unit": "ms",
+            "formattedValue": "6.36ms"
+          }
+        },
+        "memory_real_delta": {
+          "measurement": {
+            "value": 2104,
+            "unit": "B",
+            "formattedValue": "2.05 KB"
+          }
+        }
+      },
+      {
+        "label": "View rendering",
+        "color": "#85F1BF",
+        "wall_time": {
+          "percentage": 3.447911373107023,
+          "measurement": {
+            "value": 2.022,
+            "unit": "ms",
+            "formattedValue": "2.02ms"
+          }
+        },
+        "memory_real_delta": {
+          "measurement": {
+            "value": 140984,
+            "unit": "B",
+            "formattedValue": "137.68 KB"
+          }
+        }
+      },
+      {
+        "label": "Middleware out",
+        "color": "#FFD53D",
+        "wall_time": {
+          "percentage": 8.571602805163128,
+          "measurement": {
+            "value": 5.027,
+            "unit": "ms",
+            "formattedValue": "5.03ms"
+          }
+        },
+        "memory_real_delta": {
+          "measurement": {
+            "value": -6360,
+            "unit": "B",
+            "formattedValue": "-6.21 KB"
+          }
+        }
+      },
+      {
+        "label": "Preparing response",
+        "color": "#8D76FF",
+        "wall_time": {
+          "percentage": 0.01382254294135583,
+          "measurement": {
+            "value": 0.008,
+            "unit": "ms",
+            "formattedValue": "0.01ms"
+          }
+        },
+        "memory_real_delta": {
+          "measurement": {
+            "value": 368,
+            "unit": "B",
+            "formattedValue": "368 B"
+          }
+        }
+      }
+    ]
+  },
+  "request": {
+    "method": "GET",
+    "uri": "/pin",
+    "ip_address": "127.0.0.1",
+    "headers": {
+      "accept": ["*/*"],
+      "host": ["servauto-training.test"],
+      "content-length": ["0"],
+      "user-agent": ["curl/8.7.1"],
+      "x-forwarded-host": ["servauto-training.test"],
+      "x-forwarded-proto": ["https"],
+      "x-forwarded-for": ["127.0.0.1"],
+      "x-requested-with": ["XMLHttpRequest"],
+      "via": ["2.0 Caddy"]
+    },
+    "route_name": null,
+    "route_uri": "pin",
+    "controller_action": "Closure",
+    "middleware": [
+      {
+        "class": "web"
+      }
+    ],
+    "is_inertia": true,
+    "view_name": "Auth/Pin",
+    "view_data": {
+      "errors": {},
+      "current_path": "pin",
+      "app": {
+        "locale": "nl"
+      },
+      "flash": {
+        "success": null,
+        "error": null,
+        "warning": null,
+        "info": null
+      },
+      "user": null
+    }
+  },
+  "response": {
+    "status_code": 200,
+    "headers": {
+      "cache-control": ["no-cache, private"],
+      "date": ["Thu, 08 Oct 2026 13:22:48 GMT"],
+      "content-type": ["text/html; charset=utf-8"],
+      "vary": ["X-Inertia"],
+      "x-inertia-devtools-id": ["01M4DTWH79H8XJMN5VBGKCZK2E"],
+      "x-inertia-devtools-parent-out": ["01M4DTWH79H8XJMN5VBGKCZK2E"],
+      "set-cookie": ["[redacted]", "[redacted]"]
+    },
+    "size": {
+      "value": 1559,
+      "unit": "B",
+      "formattedValue": "1.52 KB"
+    },
+    "content_type": "text/html; charset=utf-8",
+    "redirect_to": null,
+    "cookies": [
+      {
+        "name": "XSRF-TOKEN",
+        "value": "[redacted]",
+        "path": "/",
+        "domain": null,
+        "same_site": "lax",
+        "secure": true,
+        "http_only": false,
+        "expires": 1791472968
+      },
+      {
+        "name": "servauto_training_session",
+        "value": "[redacted]",
+        "path": "/",
+        "domain": null,
+        "same_site": "lax",
+        "secure": true,
+        "http_only": true,
+        "expires": 1791472968
+      }
+    ]
+  },
+  "queries": {
+    "totalTime": 13.982,
+    "databases": [
+      {
+        "name": "pgsql",
+        "driver": "pgsql"
+      }
+    ],
+    "queries": [
+      {
+        "sql": "select * from \"sessions\" where \"id\" = ? limit 1",
+        "bindings": ["[redacted]"],
+        "duration": 11.352,
+        "is_duplicate": false,
+        "is_slow": false,
+        "percentage": 0.811894850186891,
+        "offset": 0,
+        "file": null,
+        "line": null
+      },
+      {
+        "sql": "select * from \"sessions\" where \"id\" = ? limit 1",
+        "bindings": ["[redacted]"],
+        "duration": 0.904,
+        "is_duplicate": true,
+        "is_slow": false,
+        "percentage": 0.06462655287099121,
+        "offset": 0.811894850186891,
+        "file": null,
+        "line": null
+      },
+      {
+        "sql": "insert into \"sessions\" (\"payload\", \"last_activity\", \"user_id\", \"ip_address\", \"user_agent\", \"id\") values (?, ?, ?, ?, ?, ?)",
+        "bindings": ["[redacted]", 1791465768, null, "127.0.0.1", "curl/8.7.1", "[redacted]"],
+        "duration": 1.727,
+        "is_duplicate": false,
+        "is_slow": false,
+        "percentage": 0.1234785969421179,
+        "offset": 0.8765214030578822,
+        "file": null,
+        "line": null
+      }
+    ]
+  },
+  "models": [],
+  "php": {
+    "version": "8.5.9",
+    "memory_limit": "128M",
+    "max_execution_time": "30",
+    "sapi": "fpm-fcgi",
+    "settings": {
+      "display_errors": "Off",
+      "error_reporting": "-1",
+      "upload_max_filesize": "2M",
+      "post_max_size": "8M",
+      "opcache.validate_timestamps": "1",
+      "auto_prepend_file": "/usr/local/share/php-data-bridge/current/bridge/prepend.php"
+    },
+    "opcache": {
+      "enabled": true,
+      "memory_used": 209720672,
+      "memory_free": 327150240,
+      "hit_rate": 96.10596889635062,
+      "cached_scripts": 7051
+    },
+    "extensions": [
+      "Core",
+      "date",
+      "lexbor",
+      "openssl",
+      "pcre",
+      "zlib",
+      "filter",
+      "hash",
+      "json",
+      "uri",
+      "Zend OPcache",
+      "random",
+      "Reflection",
+      "SPL",
+      "session",
+      "standard",
+      "sodium",
+      "libxml",
+      "cgi-fcgi",
+      "mysqlnd",
+      "PDO",
+      "xml",
+      "bcmath",
+      "calendar",
+      "ctype",
+      "curl",
+      "dom",
+      "mbstring",
+      "FFI",
+      "fileinfo",
+      "ftp",
+      "gd",
+      "gettext",
+      "iconv",
+      "igbinary",
+      "imagick",
+      "intl",
+      "exif",
+      "mysqli",
+      "opentelemetry",
+      "pdo_mysql",
+      "pdo_pgsql",
+      "pdo_sqlite",
+      "pgsql",
+      "Phar",
+      "posix",
+      "readline",
+      "shmop",
+      "SimpleXML",
+      "sockets",
+      "sqlite3",
+      "sysvmsg",
+      "sysvsem",
+      "sysvshm",
+      "tokenizer",
+      "xmlreader",
+      "xmlwriter",
+      "xsl",
+      "zip",
+      "redis"
+    ],
+    "fpm": {
+      "pool": "app-pool",
+      "process_manager": "ondemand",
+      "start_since": 3634,
+      "accepted_conn": 10,
+      "listen_queue": 0,
+      "max_listen_queue": 0,
+      "idle_processes": 0,
+      "active_processes": 1,
+      "total_processes": 1,
+      "max_active_processes": 1,
+      "max_children_reached": 0,
+      "slow_requests": 0
+    }
+  },
+  "laravel": {
+    "version": "13.24.0",
+    "environment": "local",
+    "timezone": "Europe/Amsterdam",
+    "locale": "nl",
+    "debug": true,
+    "host": "servauto-training.test"
+  },
+  "inertia": {
+    "version": "b3bbdbf0b18dad45d60ff5d031bd122b",
+    "props": {
+      "errors": {
+        "shared": true,
+        "type": null,
+        "loaded": true
+      },
+      "current_path": {
+        "shared": true,
+        "type": null,
+        "loaded": true
+      },
+      "app": {
+        "shared": true,
+        "type": null,
+        "loaded": true
+      },
+      "flash": {
+        "shared": true,
+        "type": null,
+        "loaded": true
+      },
+      "user": {
+        "shared": true,
+        "type": null,
+        "loaded": true
+      }
+    }
+  },
+  "history_row": {
+    "id": "1f95c3bb910b5a60",
+    "is_xhr": true,
+    "method": "GET",
+    "uri": "/pin",
+    "name": null,
+    "action": "Closure",
+    "status_code": 200,
+    "size": "1.52 KB",
+    "duration": "58.6ms",
+    "response_type": "Inertia",
+    "follow_up": null
+  },
+  "selected_request_id": "1f95c3bb910b5a60",
+  "request_history": [
+    {
+      "id": "1f95c3bb910b5a60",
+      "is_xhr": true,
+      "method": "GET",
+      "uri": "/pin",
+      "name": null,
+      "action": "Closure",
+      "status_code": 200,
+      "size": "1.52 KB",
+      "duration": "58.6ms",
+      "response_type": "Inertia",
+      "follow_up": null
+    }
+  ]
+}
